@@ -22,7 +22,7 @@ class ProductsDB:
   def retornaJson(self,input_string):
     data = {}
     current_key = None
-
+    
     lines = input_string.split('\n')
     for line in lines:
         if line.strip() == "":
@@ -30,7 +30,14 @@ class ProductsDB:
         if line.startswith(":"):
             data["id"] = int(line.strip(": ").strip())
         else:
-            key, value = re.split(r'\s*:\s*', line, maxsplit=1)
+            #print(re.split(r'\s*:\s*', line, maxsplit=1))
+            try:
+              key, value = re.split(r'\s*:\s*', line, maxsplit=1)
+            except:
+              #print("Erro")
+              #print(re.split(r'\s*:\s*', line, maxsplit=1))
+              key = re.split(r'\s*:\s*', line, maxsplit=1)[0]
+              value = ""
             if key == "product_details":
                 # Para o campo "product_details", analisamos a lista JSON
                 # print(value)
@@ -51,9 +58,9 @@ class ProductsDB:
 
   def searchDoc(self,query,number_results=3):
     docs = self.db.similarity_search(query, number_results)
-    result = ""
+    result = []
     for i in docs:
       a = i.to_json()['kwargs']['page_content']
-      result = result + self.retornaJson(a)
+      result.append(self.retornaJson(a))
     
     return result
