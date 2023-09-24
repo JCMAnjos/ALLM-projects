@@ -17,6 +17,7 @@ class FineTunedModel:
 
     TAMANHO_MAXIMO_CHAT = 14
     mensagens = []
+    history = ""
 
     def __init__(self):
         self.device = f'cuda:{cuda.current_device()}' if cuda.is_available() else 'cpu'
@@ -29,7 +30,7 @@ class FineTunedModel:
         )
 
 
-        hf_auth = 'COLOCAR SEU TOKEN HF AQUI'
+        hf_auth = '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'
         model_config = transformers.AutoConfig.from_pretrained(
             self.MODEL_ID,
             use_auth_token=hf_auth
@@ -47,14 +48,14 @@ class FineTunedModel:
         # enable evaluation mode to allow model inference
         self.model.eval()
 
-        print(f"Model loaded on {self.device}")
+        #print(f"Model loaded on {self.device}")
 
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(
             self.MODEL_ID,
             use_auth_token=hf_auth
         )
     
-        stop_list = ['\nHuman:', '\n```\n']
+        stop_list = ['</s>', '\n```\n']
 
         stop_token_ids = [self.tokenizer(x)['input_ids'] for x in stop_list]
         
@@ -66,10 +67,10 @@ class FineTunedModel:
         self.generate_text = transformers.pipeline(
             model=self.model,
             tokenizer=self.tokenizer,
-            return_full_text=True,  # langchain expects the full text
+            return_full_text=False,  # langchain expects the full text
             task='text-generation',
             # we pass model parameters here too
-            stopping_criteria=stopping_criteria,  # without this model rambles during chat
+            #stopping_criteria=stopping_criteria,  # without this model rambles during chat
             temperature=0.1,  # 'randomness' of outputs, 0.0 is the min and 1.0 the max
             max_new_tokens=512,  # max number of tokens to generate in the output
             repetition_penalty=1.1  # without this output begins repeating
@@ -89,17 +90,30 @@ class FineTunedModel:
 
         return self.mensagens
 
-    def getLLmResponse(self,context,query):
-        chatHistory = self.addConversationMsg(query,True)
-
-        prompt = context + "Chat history: \n"
-        for i in chatHistory:
-            prompt = prompt + i['role'] + ": " + i['content'] + "\n"
+#    def getLLmResponse(self,contextOrder,contextProducts,query):
+#        chatHistory = self.addConversationMsg(query,True)
+#
+#        prompt = context + "Chat history: \n"
+#        for i in chatHistory:
+#            prompt = prompt + i['role'] + ": " + i['content'] + "\n"
 
         
+#        res = self.generate_text(prompt)
+#        self.addConversationMsg(res[0]["generated_text"],False)
+
+#        return res[0]["generated_text"]
+
+    def getLLmResponse(self, contextOrder, contextProducts, query, FirstPrompt):
+        if FirstPrompt:
+            instruction = "<s>[INST] <<SYS>>\n\nPretend to be an online store clerk. Only give products informations that are on store product list or information about customers orders or information about the store politics\n\n<</SYS>>\n\n"
+            self.history += instruction + query + "[/INST]"
+            prompt = instruction + f"{query}\n\nStore product list: {contextProducts}\nUser orders: {contextOrder}[/INST]"
+        else:
+            prompt = self.history + f"[INST]{query}\n\nStore product list: {contextProducts}\nUser orders: {contextOrder}[/INST]"
+            self.history += f"[INST]{query}[/INST]"
+                
         res = self.generate_text(prompt)
-        self.addConversationMsg(res[0]["generated_text"],False)
-
-        return res[0]["generated_text"]
-
-
+        texto_gerado = res[0]["generated_text"]
+        self.history += texto_gerado
+        saida = f"===\nPROMPT\n===\n\n{prompt}\n\n===\nRESPOSTA GERADA\n===\n\n{texto_gerado}"
+        return saida

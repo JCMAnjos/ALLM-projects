@@ -7,7 +7,7 @@ import re
 
 class ProductsDB:
 
-  CHROMADB_PATH = "/content/drive/MyDrive/ALLM/DB"
+  CHROMADB_PATH = "/content/drive/MyDrive/ALLM/dataBaseProducts/DB"
   EMBEDDING_MODEL_ID = "all-MiniLM-L6-v2"
 
 
