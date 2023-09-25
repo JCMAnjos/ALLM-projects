@@ -1,1 +1,6 @@
-asdfasdf
+A classe principal é a classe "Chatbot_GPT.ipynb"
+Para alternar entre a utilizaçao do GPT e do LLama2, deve-se comentar a linha "llm = ChamadaGPT()" e descomentar a linha "llm = FineTunedModel()"
+A chave nrok deve ser inserida na linha "!ngrok authtoken '34523452345345'"
+A chave GPT deve ser inserida no arquivo "ChatGPT.py" na linha "API_KEY = "123412532456234514""
+O caminho onde se encontra o banco de dados relacional deve ser inserido no arquivo "importDB.py" na linha " DB_FILE = "/content/STORE_db.DB""
+O caminho do banco de dados não relacional deve ser inserido no arquivo "chromaDBconsultClass.py" na linha "CHROMADB_PATH = "/content/drive/MyDrive/ALLM/dataBaseProducts/DB""
